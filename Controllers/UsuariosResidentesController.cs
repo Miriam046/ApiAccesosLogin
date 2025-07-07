@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ApiVigilancia.Data;
 using ApiVigilancia.Models;
@@ -9,21 +10,19 @@ namespace ApiVigilancia.Controllers
     [Route("api/[controller]")]
     public class UsuariosResidentesController : ControllerBase
     {
-        private readonly SistemaAccesosContext _context;
+        private readonly SistemaAccesoContext _context;
 
-        public UsuariosResidentesController(SistemaAccesosContext context)
+        public UsuariosResidentesController(SistemaAccesoContext context)
         {
             _context = context;
         }
 
-        // GET: api/UsuariosResidentes
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UsuariosResidentes>>> GetUsuarios()
         {
             return await _context.UsuariosResidentes.ToListAsync();
         }
 
-        // GET: api/UsuariosResidentes/5
         [HttpGet("{id}")]
         public async Task<ActionResult<UsuariosResidentes>> GetUsuario(int id)
         {
@@ -32,7 +31,6 @@ namespace ApiVigilancia.Controllers
             return usuario;
         }
 
-        // POST: api/UsuariosResidentes
         [HttpPost]
         public async Task<ActionResult<UsuariosResidentes>> PostUsuario(UsuariosResidentes usuario)
         {
@@ -41,7 +39,6 @@ namespace ApiVigilancia.Controllers
             return CreatedAtAction(nameof(GetUsuario), new { id = usuario.id_usuario }, usuario);
         }
 
-        // PUT: api/UsuariosResidentes/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUsuario(int id, UsuariosResidentes usuario)
         {
@@ -51,7 +48,6 @@ namespace ApiVigilancia.Controllers
             return NoContent();
         }
 
-        // DELETE: api/UsuariosResidentes/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUsuario(int id)
         {
@@ -61,6 +57,33 @@ namespace ApiVigilancia.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
+        // 🔐 LOGIN
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.usuarioNombre) || string.IsNullOrWhiteSpace(request.password))
+            {
+                return BadRequest(new { message = "Faltan datos" });
+            }
+
+            var usuario = await _context.UsuariosResidentes
+                .FirstOrDefaultAsync(u =>
+                    u.correo == request.usuarioNombre &&
+                    u.contraseña == request.password);
+
+            if (usuario == null)
+            {
+                return Unauthorized(new { message = "Credenciales inválidas" });
+            }
+
+            return Ok(new
+            {
+                message = "Inicio de sesión exitoso",
+                id_usuario = usuario.id_usuario,
+                nombre = usuario.correo,
+                contra = usuario.contraseña
+            });
+        }
     }
 }
-
