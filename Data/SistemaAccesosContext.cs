@@ -11,8 +11,10 @@ namespace ApiVigilancia.Data
         {
         }
 
+        // Tablas (DbSet)
         public DbSet<UsuariosResidentes> UsuariosResidentes { get; set; }
         public DbSet<Invitados> Invitados { get; set; }
+        public DbSet<Residentes> Residentes { get; set; } // ✅ Agregado aquí
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -44,6 +46,22 @@ namespace ApiVigilancia.Data
                 entity.Property(e => e.estado).HasColumnName("estado");
                 entity.Property(e => e.id_residente).HasColumnName("id_residente");
             });
+
+            // ✅ Configuración para Residentes
+            modelBuilder.Entity<Residentes>(entity =>
+            {
+                entity.HasKey(e => e.id_residente);
+                entity.ToTable("Residentes");
+
+                entity.Property(e => e.id_residente).HasColumnName("id_residente");
+                entity.Property(e => e.nombre).HasMaxLength(100).HasColumnName("nombre").IsRequired();
+                entity.Property(e => e.apellido_paterno).HasMaxLength(100).HasColumnName("apellido_paterno").IsRequired();
+                entity.Property(e => e.apellido_materno).HasMaxLength(100).HasColumnName("apellido_materno").IsRequired();
+                entity.Property(e => e.calle).HasMaxLength(100).HasColumnName("calle");
+                entity.Property(e => e.numero).HasMaxLength(50).HasColumnName("numero");
+                entity.Property(e => e.telefono).HasMaxLength(100).HasColumnName("telefono");
+            });
         }
     }
 }
+
